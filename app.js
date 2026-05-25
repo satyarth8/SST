@@ -16,26 +16,28 @@ function getProgress(uid) {
   return total ? Math.round((done / total) * 100) : 0;
 }
 
-// ---- Routing ----
+// ---- Navigation ---- (also called inline from HTML onclick)
 function navigate(page) {
+  // hide all pages
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
+  // show target
   const pg = document.getElementById('page-' + page);
   if (pg) pg.classList.add('active');
-
-  document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
+  // update sidebar highlight
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === page);
+  });
   updateAllProgress();
   window.scrollTo(0, 0);
 }
 
-// ---- Flashcard state per unit ----
+// ---- Flashcard index per unit ----
 const fcIndex = {};
 
+// ---- Render a unit page ----
 function renderUnit(unit) {
   fcIndex[unit.id] = 0;
   const container = document.getElementById('page-' + unit.id);
-  const us = getUnitState(unit.id);
   const prog = getProgress(unit.id);
 
   container.innerHTML = `
@@ -48,176 +50,92 @@ function renderUnit(unit) {
       </div>
     </div>
     <div class="tabs">
-      <button class="tab-btn active" data-tab="flashcards">📇 Flashcards</button>
-      <button class="tab-btn" data-tab="questions">📝 Questions</button>
-      <button class="tab-btn" data-tab="mcq">🎯 MCQ Quiz</button>
-      <button class="tab-btn" data-tab="notes">📌 Quick Notes</button>
+      <button class="tab-btn active" onclick="switchTab(this,'fc-${unit.id}','${unit.id}')">📇 Flashcards</button>
+      <button class="tab-btn" onclick="switchTab(this,'qs-${unit.id}','${unit.id}')">📝 Questions</button>
+      <button class="tab-btn" onclick="switchTab(this,'mcq-${unit.id}','${unit.id}')">🎯 MCQ Quiz</button>
+      <button class="tab-btn" onclick="switchTab(this,'notes-${unit.id}','${unit.id}')">📌 Quick Notes</button>
     </div>
-    <div class="tab-content active" data-tabid="flashcards">${renderFlashcardsHTML(unit)}</div>
-    <div class="tab-content" data-tabid="questions">${renderQuestionsHTML(unit)}</div>
-    <div class="tab-content" data-tabid="mcq">${renderMCQHTML(unit)}</div>
-    <div class="tab-content" data-tabid="notes">${renderNotesHTML(unit)}</div>
+    <div id="fc-${unit.id}" class="tab-content active">${buildFlashcardTab(unit)}</div>
+    <div id="qs-${unit.id}" class="tab-content">${buildQuestionsTab(unit)}</div>
+    <div id="mcq-${unit.id}" class="tab-content">${buildMCQTab(unit)}</div>
+    <div id="notes-${unit.id}" class="tab-content">${buildNotesTab(unit)}</div>
   `;
 
-  // Tab switching
-  container.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      container.querySelector(`.tab-content[data-tabid="${btn.dataset.tab}"]`).classList.add('active');
-    });
-  });
-
-  // Flashcard nav — use class-based selectors scoped to container
-  const prevBtn = container.querySelector('.fc-prev-btn');
-  const nextBtn = container.querySelector('.fc-next-btn');
-  if (prevBtn) prevBtn.addEventListener('click', () => {
-    if (fcIndex[unit.id] > 0) { fcIndex[unit.id]--; showCard(unit, container); }
-  });
-  if (nextBtn) nextBtn.addEventListener('click', () => {
-    if (fcIndex[unit.id] < unit.questions.length - 1) { fcIndex[unit.id]++; showCard(unit, container); }
-  });
-
-  showCard(unit, container);
-
-  // Question accordion
-  container.querySelectorAll('.q-header').forEach(h => {
-    h.addEventListener('click', () => h.closest('.q-card').classList.toggle('open'));
-  });
-
-  container.querySelectorAll('.q-done-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const qi = parseInt(btn.dataset.qi);
-      const us2 = getUnitState(unit.id);
-      const set = new Set(us2.doneQs || []);
-      if (set.has(qi)) set.delete(qi); else set.add(qi);
-      us2.doneQs = Array.from(set);
-      save();
-      const isDone = set.has(qi);
-      btn.classList.toggle('undone', !isDone);
-      btn.textContent = isDone ? '✓ Marked as Done' : 'Mark as Done';
-      const num = container.querySelector(`.q-num[data-qi="${qi}"]`);
-      if (num) num.classList.toggle('done', isDone);
-      updateAllProgress();
-      rerenderUnitHeader(unit, container);
-    });
-  });
-
-  // MCQ
-  container.querySelectorAll('.mcq-card').forEach(card => {
-    card.querySelectorAll('.mcq-opt').forEach(opt => {
-      opt.addEventListener('click', () => {
-        if (card.dataset.answered) return;
-        card.dataset.answered = '1';
-        const chosen = parseInt(opt.dataset.idx);
-        const correct = parseInt(card.dataset.ans);
-        card.querySelectorAll('.mcq-opt').forEach(o => {
-          o.style.pointerEvents = 'none';
-          if (parseInt(o.dataset.idx) === correct) o.classList.add('show-correct');
-        });
-        opt.classList.add(chosen === correct ? 'correct' : 'wrong');
-        const explain = card.querySelector('.mcq-explain');
-        if (explain) explain.classList.add('visible');
-        const qi2 = parseInt(card.dataset.qi);
-        const us3 = getUnitState(unit.id);
-        const mset = new Set(us3.mcqAnswered || []);
-        mset.add(qi2);
-        us3.mcqAnswered = Array.from(mset);
-        save();
-        updateAllProgress();
-        rerenderUnitHeader(unit, container);
-      });
-    });
-  });
+  showCard(unit.id);
 }
 
-function showCard(unit, container) {
-  const i = fcIndex[unit.id];
-  const us = getUnitState(unit.id);
-  const cardEl = container.querySelector('.flashcard');
-  if (!cardEl) return;
-  cardEl.classList.remove('flipped');
-  // Remove old listeners by replacing the element
-  const newCard = cardEl.cloneNode(false);
-  cardEl.parentNode.replaceChild(newCard, cardEl);
-  newCard.innerHTML = buildCardHTML(unit, i, us);
-  newCard.addEventListener('click', () => newCard.classList.toggle('flipped'));
-
-  newCard.querySelector('.fc-mark-btn.known').addEventListener('click', e => {
-    e.stopPropagation();
-    markCard(unit.id, i, true);
-    showCard(unit, container);
-    updateAllProgress();
-  });
-  newCard.querySelector('.fc-mark-btn.unknown').addEventListener('click', e => {
-    e.stopPropagation();
-    markCard(unit.id, i, false);
-    showCard(unit, container);
-    updateAllProgress();
-  });
-
-  const counter = container.querySelector('.fc-counter');
-  if (counter) counter.textContent = `${i + 1} / ${unit.questions.length}`;
-
-  const prevBtn = container.querySelector('.fc-prev-btn');
-  const nextBtn = container.querySelector('.fc-next-btn');
-  if (prevBtn) prevBtn.disabled = i === 0;
-  if (nextBtn) nextBtn.disabled = i === unit.questions.length - 1;
+function switchTab(btn, tabId, uid) {
+  const container = document.getElementById('page-' + uid);
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
 }
 
-function buildCardHTML(unit, i, us) {
+// ---- Flashcard ----
+function buildFlashcardTab(unit) {
+  return `
+    <div class="flashcard-nav">
+      <button class="fc-btn" onclick="fcPrev('${unit.id}')">← Prev</button>
+      <span id="fc-counter-${unit.id}" class="fc-counter">1 / ${unit.questions.length}</span>
+      <button class="fc-btn" onclick="fcNext('${unit.id}')">Next →</button>
+    </div>
+    <div id="fc-card-${unit.id}" class="flashcard" onclick="this.classList.toggle('flipped')"></div>`;
+}
+
+function showCard(uid) {
+  const unit = UNITS.find(u => u.id === uid);
+  const i = fcIndex[uid];
   const q = unit.questions[i];
+  const us = getUnitState(uid);
   const isKnown = new Set(us.knownCards || []).has(i);
-  const points = q.points.map(p =>
+  const pts = q.points.map(p =>
     `<li><span class="pt-head">${p.head}:</span> <span class="pt-desc">${p.desc}</span></li>`
   ).join('');
-  return `
+
+  const cardEl = document.getElementById('fc-card-' + uid);
+  if (!cardEl) return;
+  cardEl.classList.remove('flipped');
+  cardEl.innerHTML = `
     <div class="flashcard-inner">
       <div class="flashcard-front">
         <div class="fc-qnum">Question ${i+1} of ${unit.questions.length} ${isKnown ? '✅' : ''}</div>
         <div class="fc-question">${q.q}</div>
-        <div class="fc-hint">Click to reveal answer</div>
+        <div class="fc-hint">Click card to reveal answer</div>
       </div>
       <div class="flashcard-back">
         <div class="fc-ans-title">Answer Points</div>
-        <ul class="fc-points">${points}</ul>
+        <ul class="fc-points">${pts}</ul>
         <div class="fc-actions">
-          <button class="fc-mark-btn known">✓ Got it</button>
-          <button class="fc-mark-btn unknown">✗ Review again</button>
+          <button class="fc-mark-btn known" onclick="event.stopPropagation();markCard('${uid}',${i},true)">✓ Got it</button>
+          <button class="fc-mark-btn unknown" onclick="event.stopPropagation();markCard('${uid}',${i},false)">✗ Review again</button>
         </div>
       </div>
     </div>`;
+
+  const counter = document.getElementById('fc-counter-' + uid);
+  if (counter) counter.textContent = `${i+1} / ${unit.questions.length}`;
 }
 
-function markCard(uid, idx, isKnown) {
+function fcPrev(uid) {
+  if (fcIndex[uid] > 0) { fcIndex[uid]--; showCard(uid); }
+}
+function fcNext(uid) {
+  const unit = UNITS.find(u => u.id === uid);
+  if (fcIndex[uid] < unit.questions.length - 1) { fcIndex[uid]++; showCard(uid); }
+}
+function markCard(uid, i, known) {
   const us = getUnitState(uid);
   const set = new Set(us.knownCards || []);
-  if (isKnown) set.add(idx); else set.delete(idx);
+  if (known) set.add(i); else set.delete(i);
   us.knownCards = Array.from(set);
   save();
+  showCard(uid);
+  updateAllProgress();
 }
 
-function rerenderUnitHeader(unit, container) {
-  const prog = getProgress(unit.id);
-  const bar = container.querySelector('.unit-progress-row .prog-bar');
-  const pct = container.querySelector('.unit-pct');
-  if (bar) bar.style.width = prog + '%';
-  if (pct) pct.textContent = prog + '%';
-}
-
-function renderFlashcardsHTML(unit) {
-  return `
-    <div class="flashcard-nav">
-      <button class="fc-btn fc-prev-btn" disabled>← Prev</button>
-      <span class="fc-counter">1 / ${unit.questions.length}</span>
-      <button class="fc-btn fc-next-btn">Next →</button>
-    </div>
-    <div class="flashcard"></div>
-  `;
-}
-
-function renderQuestionsHTML(unit) {
+// ---- Questions ----
+function buildQuestionsTab(unit) {
   const us = getUnitState(unit.id);
   const doneSet = new Set(us.doneQs || []);
   return `<div class="q-list">` + unit.questions.map((q, i) => {
@@ -226,45 +144,81 @@ function renderQuestionsHTML(unit) {
       `<li><span class="pt-head">${p.head}:</span><span class="pt-desc"> ${p.desc}</span></li>`
     ).join('');
     return `
-      <div class="q-card">
-        <div class="q-header">
-          <div class="q-num ${isDone ? 'done' : ''}" data-qi="${i}">${i+1}</div>
+      <div class="q-card" id="qcard-${unit.id}-${i}">
+        <div class="q-header" onclick="document.getElementById('qcard-${unit.id}-${i}').classList.toggle('open')">
+          <div class="q-num ${isDone?'done':''}" id="qnum-${unit.id}-${i}">${i+1}</div>
           <div class="q-title">${q.q}</div>
           <div class="q-marks">7 marks</div>
           <div class="q-chevron">▾</div>
         </div>
         <div class="q-body">
           <ul class="q-answer-points">${pts}</ul>
-          <button class="q-done-btn ${isDone ? '' : 'undone'}" data-qi="${i}">${isDone ? '✓ Marked as Done' : 'Mark as Done'}</button>
+          <button class="q-done-btn ${isDone?'':'undone'}" id="qdone-${unit.id}-${i}"
+            onclick="toggleQDone('${unit.id}',${i})">${isDone?'✓ Marked as Done':'Mark as Done'}</button>
         </div>
       </div>`;
   }).join('') + `</div>`;
 }
 
-function renderMCQHTML(unit) {
+function toggleQDone(uid, i) {
+  const us = getUnitState(uid);
+  const set = new Set(us.doneQs || []);
+  if (set.has(i)) set.delete(i); else set.add(i);
+  us.doneQs = Array.from(set);
+  save();
+  const isDone = set.has(i);
+  const btn = document.getElementById('qdone-' + uid + '-' + i);
+  const num = document.getElementById('qnum-' + uid + '-' + i);
+  if (btn) { btn.textContent = isDone ? '✓ Marked as Done' : 'Mark as Done'; btn.classList.toggle('undone', !isDone); }
+  if (num) num.classList.toggle('done', isDone);
+  updateAllProgress();
+  updateUnitHeader(uid);
+}
+
+// ---- MCQ ----
+function buildMCQTab(unit) {
   const us = getUnitState(unit.id);
   const answered = new Set(us.mcqAnswered || []);
   return `<div class="mcq-section">` + unit.mcqs.map((mcq, i) => {
-    const wasAnswered = answered.has(i);
+    const was = answered.has(i);
     const opts = mcq.opts.map((opt, oi) => {
-      let cls = 'mcq-opt';
-      if (wasAnswered) {
-        cls += ' revealed';
-        if (oi === mcq.ans) cls += ' show-correct';
-      }
-      return `<div class="${cls}" data-idx="${oi}" style="${wasAnswered ? 'pointer-events:none' : ''}">${String.fromCharCode(65+oi)}. ${opt}</div>`;
+      let cls = 'mcq-opt' + (was ? ' locked' : '');
+      if (was && oi === mcq.ans) cls += ' show-correct';
+      return `<div class="${cls}" onclick="answerMCQ('${unit.id}',${i},${oi},${mcq.ans})">${String.fromCharCode(65+oi)}. ${opt}</div>`;
     }).join('');
     return `
-      <div class="mcq-card" data-ans="${mcq.ans}" data-qi="${i}" ${wasAnswered ? 'data-answered="1"' : ''}>
+      <div class="mcq-card" id="mcqcard-${unit.id}-${i}">
         <div class="mcq-qnum">Q${i+1}</div>
         <div class="mcq-qtext">${mcq.q}</div>
-        <div class="mcq-options">${opts}</div>
-        <div class="mcq-explain ${wasAnswered ? 'visible' : ''}">💡 ${mcq.explain}</div>
+        <div class="mcq-options" id="mcqopts-${unit.id}-${i}">${opts}</div>
+        <div class="mcq-explain ${was?'visible':''}" id="mcqexp-${unit.id}-${i}">💡 ${mcq.explain}</div>
       </div>`;
   }).join('') + `</div>`;
 }
 
-function renderNotesHTML(unit) {
+function answerMCQ(uid, qi, chosen, correct) {
+  const optsEl = document.getElementById('mcqopts-' + uid + '-' + qi);
+  if (!optsEl) return;
+  const opts = optsEl.querySelectorAll('.mcq-opt');
+  if (opts[0].classList.contains('locked')) return;
+  opts.forEach((o, oi) => {
+    o.classList.add('locked');
+    if (oi === correct) o.classList.add('show-correct');
+  });
+  opts[chosen].classList.add(chosen === correct ? 'correct' : 'wrong');
+  const exp = document.getElementById('mcqexp-' + uid + '-' + qi);
+  if (exp) exp.classList.add('visible');
+  const us = getUnitState(uid);
+  const mset = new Set(us.mcqAnswered || []);
+  mset.add(qi);
+  us.mcqAnswered = Array.from(mset);
+  save();
+  updateAllProgress();
+  updateUnitHeader(uid);
+}
+
+// ---- Notes ----
+function buildNotesTab(unit) {
   return `<div class="notes-grid">` + unit.notes.map(n => `
     <div class="note-card">
       <h4>${n.title}</h4>
@@ -273,8 +227,18 @@ function renderNotesHTML(unit) {
 }
 
 // ---- Progress ----
+function updateUnitHeader(uid) {
+  const prog = getProgress(uid);
+  const container = document.getElementById('page-' + uid);
+  if (!container) return;
+  const bar = container.querySelector('.unit-progress-row .prog-bar');
+  const pct = container.querySelector('.unit-pct');
+  if (bar) bar.style.width = prog + '%';
+  if (pct) pct.textContent = prog + '%';
+}
+
 function updateAllProgress() {
-  let total = 0, done = 0;
+  let total = 0, totalDone = 0;
   UNITS.forEach(u => {
     const p = getProgress(u.id);
     const num = u.id.replace('u', '');
@@ -286,9 +250,9 @@ function updateAllProgress() {
     if (badge) { badge.textContent = p + '%'; badge.classList.toggle('done', p === 100); }
     const uTotal = u.questions.length + u.mcqs.length;
     total += uTotal;
-    done += Math.round((p / 100) * uTotal);
+    totalDone += Math.round((p / 100) * uTotal);
   });
-  const overall = total ? Math.round((done / total) * 100) : 0;
+  const overall = total ? Math.round((totalDone / total) * 100) : 0;
   const ob = document.getElementById('overall-bar');
   const op = document.getElementById('overall-pct');
   if (ob) ob.style.width = overall + '%';
@@ -297,23 +261,21 @@ function updateAllProgress() {
 
 // ---- Init ----
 function init() {
+  // render all unit pages
   UNITS.forEach(u => renderUnit(u));
 
-  // All [data-page] elements navigate — both sidebar and dashboard cards
-  document.querySelectorAll('[data-page]').forEach(el => {
-    el.addEventListener('click', () => {
-      const page = el.dataset.page;
-      if (page) navigate(page);
-    });
+  // sidebar nav click
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.page));
   });
 
+  // reset button
   document.getElementById('reset-all').addEventListener('click', () => {
-    if (confirm('Reset all progress? This cannot be undone.')) {
-      UNITS.forEach(u => { state[u.id] = { knownCards: [], doneQs: [], mcqAnswered: [] }; });
-      save();
-      UNITS.forEach(u => renderUnit(u));
-      updateAllProgress();
-    }
+    if (!confirm('Reset all progress?')) return;
+    UNITS.forEach(u => { state[u.id] = { knownCards: [], doneQs: [], mcqAnswered: [] }; });
+    save();
+    UNITS.forEach(u => renderUnit(u));
+    updateAllProgress();
   });
 
   updateAllProgress();
