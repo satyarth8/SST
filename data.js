@@ -100,6 +100,47 @@ const UNITS = [
         { head: '(b) Output Compatibility', desc: 'Output type (analog/digital) must match the interfacing system (ADC resolution, protocol).' },
         { head: '(b) Cost & Power', desc: 'Total cost, power consumption, and availability from suppliers affect selection.' }
       ]
+    },
+    {
+      q: 'Explain the concept of self-calibration and self-diagnostics in smart sensors with examples.',
+      points: [
+        { head: 'Self-Calibration Definition', desc: 'Automatic adjustment of sensor output to match true value without manual intervention.' },
+        { head: 'Calibration Algorithm', desc: 'Microprocessor compares stored reference values with measured values and applies correction factors.' },
+        { head: 'Temperature Compensation', desc: 'Adjusts readings based on temperature drift — e.g., RTD sensor calibrates itself across temp range.' },
+        { head: 'Zero and Span Calibration', desc: 'Zero: output at minimum input. Span: output range. Smart sensor adjusts both automatically.' },
+        { head: 'Self-Diagnostics Function', desc: 'Built-in tests detect sensor faults, open circuits, short circuits, and report error codes.' },
+        { head: 'Fault Detection Methods', desc: 'Checks sensor response time, output range validity, communication line health, power supply.' },
+        { head: 'Error Reporting', desc: 'Reports status code (0=OK, 1=Low battery, 2=Sensor fault) via digital output or communication protocol.' },
+        { head: 'Example: Smart RTD', desc: 'RTD (Resistance Temperature Detector) with onboard electronics: auto-calibrates at -20°C and +50°C reference points.' }
+      ]
+    },
+    {
+      q: 'Compare analog and digital output sensors. Discuss advantages of digital sensors in industrial applications.',
+      points: [
+        { head: 'Analog Output Range', desc: '4-20mA current loop or 0-10V voltage — continuous signal proportional to measurand.' },
+        { head: 'Digital Output Format', desc: 'Serial (I2C/SPI/UART) or parallel binary — discrete digital values (0s and 1s).' },
+        { head: 'Noise Immunity', desc: 'Digital: immune to EMI (electromagnetic interference). Analog: degrades over long cable runs (>100m).' },
+        { head: 'Signal Conditioning', desc: 'Analog needs external amplifier, filter, ADC. Digital includes all onboard — plug-and-play.' },
+        { head: 'Industrial Reliability', desc: 'Digital with checksum/parity detects transmission errors. Analog cannot detect if signal corrupted.' },
+        { head: 'Multi-Sensor Networks', desc: 'Digital I2C/SPI daisy-chain multiple sensors on 2 wires. Analog needs separate wire per sensor.' },
+        { head: 'Smart Features', desc: 'Digital sensors include calibration data, sensor ID, status flags, setpoint configuration — all accessible.' },
+        { head: 'Installation Cost', desc: 'Digital: lower wiring cost (fewer cables), faster commissioning. Analog: more expensive installation.' },
+        { head: 'Industry 4.0 Alignment', desc: 'Digital sensors integrate seamlessly into IoT, Industry 4.0, and smart factory ecosystems.' }
+      ]
+    },
+    {
+      q: 'Explain the role of signal processing and data fusion in improving sensor accuracy.',
+      points: [
+        { head: 'Raw Signal Noise', desc: 'Sensors output noisy signal — high-frequency spikes, low-frequency drift from temperature and aging.' },
+        { head: 'Filtering Technique', desc: 'Low-pass filter removes high-frequency noise. Example: 1kHz sensor with 100Hz cutoff filter.' },
+        { head: 'Averaging Algorithm', desc: 'Take multiple samples (n=10) and compute mean — reduces random noise by factor of sqrt(n).' },
+        { head: 'Calibration Correction', desc: 'Apply stored offset and gain factors: True_Value = (Raw_Reading - Offset) / Gain.' },
+        { head: 'Sensor Fusion Definition', desc: 'Combine multiple sensor inputs to get better estimate than any single sensor.' },
+        { head: 'Fusion Example', desc: 'Accelerometer + Gyroscope fused with Kalman filter gives accurate 3D orientation without drift.' },
+        { head: 'Kalman Filter Principle', desc: 'Weighting: trust accurate but slow sensor less, noisy but fast sensor more — optimal blend.' },
+        { head: 'Redundancy Check', desc: 'Use 3 sensors: if one deviates >threshold, flag it as faulty, use other two for voting.' },
+        { head: 'Real-World Gain', desc: 'Sensor fusion in smartphones: accelerometer+magnetometer+GPS gives drift-free position; crucial for navigation.' }
+      ]
     }
   ],
   mcqs: [
@@ -219,6 +260,48 @@ const UNITS = [
         { head: 'MCU Processing', desc: 'Microcontroller reads sensor data, runs algorithm, and controls HVAC, lights, or access systems.' },
         { head: 'Applications', desc: 'Smart lighting (lights on/off with occupancy), HVAC control, conference room booking, fire evacuation.' },
         { head: 'Energy Savings', desc: 'Turning off systems in unoccupied areas can save 30–40% energy in commercial buildings.' }
+      ]
+    },
+    {
+      q: 'Discuss the factors affecting accuracy of ultrasonic sensors and methods to improve their performance.',
+      points: [
+        { head: 'Temperature Effect', desc: 'Speed of sound changes with temp: ~0.6 m/s per °C. At 25°C = 343 m/s, at 0°C = 331 m/s.' },
+        { head: 'Compensation Method', desc: 'Measure temperature, apply correction: v_actual = 331 + 0.6 × T. Then recalculate distance.' },
+        { head: 'Humidity Effect', desc: 'Sound travels slower in dry air than humid air at same temperature.' },
+        { head: 'Beam Width Limitation', desc: 'Ultrasonic has ~15-20 degree beam angle. Object must be within cone, not at side angle.' },
+        { head: 'Reflectivity', desc: 'Soft materials (foam, cotton) absorb ultrasound; hard surfaces (metal, concrete) reflect well.' },
+        { head: 'Distance Linearity', desc: 'Accuracy is ±1-2cm at close range, but error increases proportionally at large distances.' },
+        { head: 'Noise Immunity', desc: 'Electrical noise rejected by filtering. Acoustic noise (machinery) can cause false echoes.' },
+        { head: 'Multiple Sensor Setup', desc: 'Use redundant ultrasonic sensors at slightly different angles — majority voting rejects outliers.' },
+        { head: 'Sensor Fusion', desc: 'Combine ultrasonic with IR or LiDAR — each compensates for weaknesses of the other.' }
+      ]
+    },
+    {
+      q: 'Design a smart occupancy detection system using motion and presence sensors. Explain working principles.',
+      points: [
+        { head: 'System Objective', desc: 'Accurately detect if room is occupied, count people entering/exiting, trigger lights/HVAC accordingly.' },
+        { head: 'PIR Sensor Role', desc: 'Detects infrared radiation from humans — triggers initial wake-up of system from sleep mode.' },
+        { head: 'Ultrasonic Confirmation', desc: 'Measures distance to moving object — confirms PIR detection and differentiates human from pet.' },
+        { head: 'Microwave Sensor', desc: 'Detects motion even behind curtains/door — confirms occupancy when person is stationary.' },
+        { head: 'Person Counting', desc: 'Direction sensing: if motion crosses threshold A then B = entering; B then A = exiting.' },
+        { head: 'Time-Out Logic', desc: 'If no motion for 5 minutes, assume room unoccupied, initiate HVAC/light shutdown.' },
+        { head: 'Dual-Sensor Voting', desc: 'PIR AND ultrasonic must both trigger (configurable AND/OR logic) — reduces false alarms.' },
+        { head: 'MCU Algorithm', desc: 'Reads sensors every 100ms, applies hysteresis filter, updates occupancy flag, sends I2C/RF command.' },
+        { head: 'Real-World Deployment', desc: 'Commercial systems save 30-40% energy; average office: 1000m2 = 10-15 sensor nodes.' }
+      ]
+    },
+    {
+      q: 'Explain the advantages and limitations of capacitive occupancy sensors in touchscreen and proximity applications.',
+      points: [
+        { head: 'Capacitive Principle', desc: 'Measures capacitance between electrode and ground, or between two electrodes (mutual capacitance).' },
+        { head: 'Touchscreen Design', desc: 'Projected Capacitive (PCAP): X-Y grid of electrodes, finger touch reduces capacitance at that location.' },
+        { head: 'Multi-Touch Capability', desc: 'Simultaneous detection of multiple touch points — PCAP can track up to 10 fingers in smartphones.' },
+        { head: 'Liquid Level Detection', desc: 'Capacitive sensor outside non-conductive tank measures dielectric change as liquid level changes.' },
+        { head: 'Advantage: Through Material', desc: 'Works through glass, plastic, wood — no line-of-sight needed like optical sensors.' },
+        { head: 'Sensitivity Control', desc: 'Adjustable thresholds allow tuning sensitivity — can reject accidental touches, optimize response.' },
+        { head: 'Disadvantage: Environmental', desc: 'Humidity, temperature, nearby conductors (metal objects) cause false triggering or drift.' },
+        { head: 'Noise Immunity Problem', desc: 'RFI (radio frequency interference) from WiFi, cell towers, power lines causes noise.' },
+        { head: 'Solution: Shielding', desc: 'Faraday cage around electrode, twisted pair cabling, low-impedance drive — minimizes coupling.' }
       ]
     }
   ],
@@ -364,6 +447,48 @@ const UNITS = [
         { head: 'Cost', desc: 'Thermocouple: very cheap. IR thermometer: moderate. Pyrometer: expensive.' },
         { head: 'Applications', desc: 'Thermocouple: furnaces, engines. IR: medical, food safety, PCB testing, firefighting, moving objects.' }
       ]
+    },
+    {
+      q: 'Design and explain a practical optical communication system using photodiode receiver.',
+      points: [
+        { head: 'System Overview', desc: 'Transmitter: LED or laser modulated with digital signal. Channel: fiber optic cable. Receiver: photodiode + transimpedance amplifier.' },
+        { head: 'LED Transmitter', desc: 'Infrared LED driven by logic signal (1=ON, 0=OFF) at data rate (e.g., 9600 baud for RS232).' },
+        { head: 'Photodiode Receiver', desc: 'IR photodiode detects modulated light, produces current proportional to received light intensity.' },
+        { head: 'Transimpedance Amplifier', desc: 'Converts photodiode current (nanoamps) to voltage (millivolts) using op-amp with feedback resistor.' },
+        { head: 'Signal Recovery', desc: 'Low-pass filter removes high-frequency noise, then Schmitt trigger recovers digital 0/1 from analog signal.' },
+        { head: 'Range Limitation', desc: 'Maximum range depends on LED power, cable attenuation, receiver sensitivity. Typical: 10-100 meters.' },
+        { head: 'Advantages', desc: 'Immune to electrical interference, galvanic isolation, small size, simple implementation, low cost.' },
+        { head: 'Practical Application', desc: 'TV remote control: LED transmits <40kHz carrier modulated with RC5 protocol to photodiode in TV.' },
+        { head: 'Speed Limitation', desc: 'Photodiode bandwidth ~1MHz typical; faster signals use heterodyne or analog modulation (RF on optical).' }
+      ]
+    },
+    {
+      q: 'Compare imaging sensor technologies (CCD vs CMOS) and explain the evolution toward CMOS dominance.',
+      points: [
+        { head: 'CCD Charge Transfer', desc: 'All electrons shift to output register in serial chain — analog charge travel, converted to voltage at end.' },
+        { head: 'CMOS Parallel Readout', desc: 'Each pixel has onboard amplifier — row/column decoders select pixel, read voltage directly and digitize.' },
+        { head: 'CCD Power Consumption', desc: 'Multiple clock signals, high voltage (12-18V) for charge transfer — consumes 100-500mW typical.' },
+        { head: 'CMOS Low Power', desc: 'Single supply (3.3V), onboard ADC — total power <100mW, ideal for battery-powered devices.' },
+        { head: 'CCD Image Quality', desc: 'Lower noise, higher quantum efficiency, better light sensitivity — preferred for astronomy, medical imaging.' },
+        { head: 'CMOS Improvements', desc: 'Back-side illuminated (BSI) CMOS increases light collection. Stacked design adds dedicated ADC layer.' },
+        { head: 'CMOS Speed', desc: 'Parallel readout of all pixels simultaneously — high frame rates (1000+ fps) vs CCD sequential (~30fps).' },
+        { head: 'Production Cost', desc: 'CMOS uses standard semiconductor fab → cheap. CCD needs specialized fab → expensive.' },
+        { head: 'Market Dominance', desc: '2000s: CCD ruled digital cameras. 2010s: CMOS matched/exceeded CCD quality. 2020s: >90% CMOS.' }
+      ]
+    },
+    {
+      q: 'Explain the construction and operating principles of a pyrometer for high-temperature measurement.',
+      points: [
+        { head: 'Non-Contact Measurement', desc: 'Pyrometer measures infrared radiation emitted by hot object — no physical contact needed.' },
+        { head: 'Optical Path', desc: 'Lens focuses IR radiation from object onto thermopile detector, IR filter selects specific wavelength range.' },
+        { head: 'Thermopile Detector', desc: 'Array of thermocouples in series — each junction absorbs IR photons, generates small voltage (~1mV).' },
+        { head: 'Reference Junction', desc: 'Cold junction compensates for ambient temperature — uses thermistor or RTD to sense receiver temperature.' },
+        { head: 'Signal Conditioning', desc: 'Amplifies millivolt-level output to 0-5V range. Non-linear correction applied for T^4 (Stefan-Boltzmann).' },
+        { head: 'Temperature Range', desc: 'Pyrometers: 250-1000°C typical. Two-color (ratio) pyrometers: 800-3000°C, independent of emissivity.' },
+        { head: 'Emissivity Error', desc: 'Stefan-Boltzmann: P = ε × σ × T^4. If ε unknown, measurement error. E.g., polished metal ε=0.1, error 2.5x.' },
+        { head: 'Two-Color Technique', desc: 'Measure at two wavelengths, compute ratio — cancels emissivity, gives true temperature.' },
+        { head: 'Industrial Application', desc: 'Steel furnace (1500°C), glass molten tank (1600°C), semiconductor processing — all use pyrometers.' }
+      ]
     }
   ],
   mcqs: [
@@ -483,6 +608,48 @@ const UNITS = [
         { head: 'Memory (Flash/EEPROM/RAM)', desc: 'Flash: stores firmware. EEPROM: stores calibration data. RAM: temporary sensor readings.' },
         { head: 'Communication Interface', desc: 'MCU sends processed data via UART/USB to PC, or I2C/SPI to display, or WiFi/BLE to cloud.' },
         { head: 'Power Supply', desc: 'Regulated supply (3.3V/5V) with filtering for sensor circuit and MCU. Battery with LDO for portable.' }
+      ]
+    },
+    {
+      q: 'Design a complete sensor interfacing circuit for an RTD (Resistance Temperature Detector) with MCU.',
+      points: [
+        { head: 'RTD Characteristics', desc: 'PT100: 100Ω at 0°C, 138.5Ω at 100°C, 0.385Ω/°C. Small resistance changes require precise measurement.' },
+        { head: 'Wheatstone Bridge', desc: 'RTD as one arm of bridge. Excitation current (1mA) applied. Bridge output voltage ~10mV at 100°C.' },
+        { head: 'Instrumentation Amplifier', desc: 'INA128 with R_gain=1kΩ provides G=1+50k/R_gain=51V/V. Output: 10mV × 51 = 510mV.' },
+        { head: 'Low-Pass Filter', desc: 'RC filter with f_c=10Hz cuts 50/60Hz mains noise and switching noise from MCU.' },
+        { head: 'ADC Selection', desc: '16-bit delta-sigma ADC (ADS1115) needed for RTD precision. 10-bit SAR ADC insufficient (only 0.1°C resolution).' },
+        { head: 'I2C Interface', desc: 'ADS1115 communicates via I2C. MCU reads conversion result, applies calibration curve.' },
+        { head: 'Linearization', desc: 'RTD response is non-linear. Use lookup table (3 points) or quadratic polynomial: T = A + B×R + C×R^2.' },
+        { head: 'Cold Junction Comp.', desc: 'Not needed for RTD (no thermoelectric effect). Required for thermocouples with reference junction.' },
+        { head: 'Practical Implementation', desc: 'Heating system: PT100 RTD measures boiler temp. MCU compares to setpoint (80°C), controls relay.' }
+      ]
+    },
+    {
+      q: 'Explain sensor fusion techniques and the Kalman filter algorithm for improving measurement accuracy.',
+      points: [
+        { head: 'Sensor Fusion Problem', desc: 'Single sensor has noise/drift. Example: GPS has 5m error, accelerometer drifts over time.' },
+        { head: 'Fusion Approach', desc: 'Use fast sensor (accel, prone to drift) + slow sensor (GPS, accurate but noisy). Optimally blend both.' },
+        { head: 'Kalman Filter Concept', desc: 'Recursively estimates true state by weighting prediction (model) vs measurement (sensor).' },
+        { head: 'Prediction Step', desc: 'Project previous state forward using dynamics model. Example: position = position_old + velocity × dt.' },
+        { head: 'Update Step', desc: 'Compare prediction with measurement. Adjust estimate based on measurement uncertainty vs prediction uncertainty.' },
+        { head: 'Kalman Gain', desc: 'K = P_predict / (P_predict + R_noise). High K if sensor trusted more (low noise), low K if model trusted.' },
+        { head: 'Smartphone Example', desc: 'Gyro measures angle, but drifts. Accelerometer and magnetometer have noise but no drift. Kalman fuses all three.' },
+        { head: 'Advantages', desc: 'Optimal weighting, recursion efficient (O(n) memory), real-time computation, proven optimal for linear systems.' },
+        { head: 'Limitation', desc: 'Assumes Gaussian noise distribution. For outliers/non-linear, use Extended Kalman Filter (EKF) or Particle Filter.' }
+      ]
+    },
+    {
+      q: 'Discuss the design of a wireless sensor network (WSN) for smart building HVAC control.',
+      points: [
+        { head: 'Building Requirements', desc: '10,000 m^2 office. Goal: maintain 21-23°C in each zone, save 30% energy, real-time monitoring.' },
+        { head: 'Sensor Distribution', desc: '40 wireless nodes: 30 temperature sensors (hallways, offices), 10 CO2 sensors (occupancy indicator).' },
+        { head: 'Protocol Selection', desc: 'Zigbee chosen: mesh network self-heals, 100m range in open space, low power (months on batteries).' },
+        { head: 'Node Specifications', desc: 'Microcontroller (ARM Cortex-M0), temperature sensor (±0.5°C), Zigbee radio, coin-cell battery (CR2032).' },
+        { head: 'Power Budget', desc: 'Node: 50mW during operation, <1µW sleep. Temperature measurement every 5min (100µJ/measurement) → 2-3 year battery.' },
+        { head: 'Mesh Topology', desc: 'End devices sleep 99.9%, wake to transmit. Router nodes (plugged in) forward packets. Coordinator connects to server.' },
+        { head: 'Server Logic', desc: 'Collects data from all nodes, computes zone average temperature, sends setpoint command to HVAC controller.' },
+        { head: 'Advantage', desc: 'No installation cost (wireless), flexibility (add/remove nodes), real-time monitoring, zoning capability.' },
+        { head: 'Reliability', desc: 'Mesh redundancy: if node fails, others relay packets. Coordinator maintains network time synchronization.' }
       ]
     }
   ],
@@ -604,6 +771,48 @@ const UNITS = [
         { head: 'Healthcare IoT', desc: 'Wearable sensors (heart rate, glucose, SpO2) transmit data to cloud for remote patient monitoring.' },
         { head: 'Supply Chain', desc: 'GPS + temperature + humidity sensors on packages ensure cold chain integrity, track location.' }
       ]
+    },
+    {
+      q: 'Design a long-range agricultural WSN for smart irrigation monitoring and control.',
+      points: [
+        { head: 'Application Context', desc: '100 hectare farmland. 50 soil moisture sensors + 10 weather stations. Goal: optimize water, reduce runoff.' },
+        { head: 'Sensor Nodes', desc: 'Each field node: soil moisture sensor (capacitive), temperature, humidity, Zigbee radio, solar panel, rechargeable battery.' },
+        { head: 'Range Challenge', desc: 'Zigbee typical range 100m line-of-sight, reduced in vegetation. Solution: mesh network with repeater nodes.' },
+        { head: 'Repeater Strategy', desc: 'Place 15 repeater nodes on tall poles (5m) at 150m spacing. Create mesh backbone covering entire farm.' },
+        { head: 'Gateway Node', desc: 'Connected to farmhouse via WiFi. Collects data from all field nodes every 10 minutes. Runs irrigation algorithm.' },
+        { head: 'Control Logic', desc: 'If soil moisture <threshold (40%), activate solenoid valve for 30min. Repeat only if moisture still low after 1 hour.' },
+        { head: 'Cloud Integration', desc: 'Gateway uploads data to cloud (AWS IoT Core). Farmer monitors from smartphone. Historical data trains ML model.' },
+        { head: 'Power Management', desc: 'Field nodes solar-charged during day. Night operation on battery (5 days autonomy in cloudy weather).' },
+        { head: 'ROI Calculation', desc: 'Water savings: 30-40%. Cost: $500/hectare. Payback: 1-2 years. Increased yield: 10-15%.' }
+      ]
+    },
+    {
+      q: 'Explain the architecture, routing protocols, and challenges of Industrial Wireless Sensor Networks.',
+      points: [
+        { head: 'Industrial WSN Difference', desc: 'Consumer WSN: best-effort delivery. Industrial: deterministic (guaranteed latency <100ms), 99.99% uptime.' },
+        { head: 'WirelessHART Standard', desc: 'Built on IEEE 802.15.4. Frequency hopping for FCC compliance. Time-slotted TDMA, redundant paths.' },
+        { head: 'Mesh with Redundancy', desc: 'Every node has 2+ neighbors. If link fails, packet rerouted automatically within one slot (10ms).' },
+        { head: 'Time Synchronization', desc: 'All nodes synchronized to gateway (atomic clock) within <250µs. Essential for TDMA scheduling.' },
+        { head: 'Security', desc: 'AES-128 encryption, key management, authentication. Prevents eavesdropping and injection attacks.' },
+        { head: 'Routing Protocol (ACDP)', desc: 'Advertise/Connect/Disconnect/Keep-Alive. Builds routing graph at startup. Traffic adapts routes based on link quality.' },
+        { head: 'Challenge: Interference', desc: 'Industrial environment: WiFi, Bluetooth, cordless phones on 2.4GHz. Frequency agility switches channels automatically.' },
+        { head: 'Challenge: Multipath Fading', desc: 'Reflections from machinery/metal cause constructive/destructive interference. Adaptive power control mitigates.' },
+        { head: 'Application: Refinery', desc: 'Pressure sensors on pipelines, pump vibration monitors. Wireless avoids cable routing complexity in hazardous zones.' }
+      ]
+    },
+    {
+      q: 'Compare wireless technologies (Zigbee, LoRaWAN, NB-IoT) for IoT applications and their trade-offs.',
+      points: [
+        { head: 'Zigbee Characteristics', desc: '2.4GHz, 20kbps-250kbps, mesh, 10-100m range, <100mW power, short latency (<100ms).' },
+        { head: 'Zigbee Use Case', desc: 'Home automation: lights, locks, thermostats. Real-time response required. Mesh gives indoor coverage.' },
+        { head: 'LoRaWAN Characteristics', desc: '433/868/915MHz, 50kbps, star topology, 2-15km rural range, 10µW sleep, high latency (10s-minutes).' },
+        { head: 'LoRaWAN Use Case', desc: 'Smart agriculture, asset tracking. Hundreds of nodes on single gateway. Battery life: 5-10 years.' },
+        { head: 'NB-IoT Characteristics', desc: '4G/5G cellular, uses existing network, 250kbps, wide coverage, 10-20µW sleep, monthly cost/SIM.' },
+        { head: 'NB-IoT Use Case', desc: 'Smart meter, vehicle tracking. Nationwide coverage needed. Reliability critical, cost secondary.' },
+        { head: 'Zigbee vs LoRa', desc: 'Zigbee: fast, local mesh. LoRa: far range, slow, single gateway. Zigbee for indoor buildings, LoRa for rural open fields.' },
+        { head: 'NB-IoT vs LoRa', desc: 'NB-IoT: licensed spectrum, guaranteed service, cost per device. LoRa: unlicensed, no contract, lower device cost.' },
+        { head: 'Hybrid Approach', desc: 'Large campus: LoRa gateways + Zigbee mesh nodes. LoRa connects distant buildings, Zigbee for indoor fine-grained sensing.' }
+      ]
     }
   ],
   mcqs: [
@@ -723,6 +932,48 @@ const UNITS = [
         { head: 'Connected Factory', desc: 'All machines, conveyors, robots equipped with sensors communicating on industrial IoT network — complete visibility.' },
         { head: 'Quality Control', desc: 'Vision sensors and inline measurement sensors detect defects in real-time — 100% inspection instead of sampling.' },
         { head: 'Energy Management', desc: 'Power sensors on every machine — identify energy waste, optimize production scheduling, reduce carbon footprint.' }
+      ]
+    },
+    {
+      q: 'Explain the design and operation of an autonomous vehicle sensor fusion system for path planning and safety.',
+      points: [
+        { head: 'Multi-Sensor Architecture', desc: 'LiDAR (3D map), Radar (velocity), Camera (vision), Ultrasonic (blind spots), IMU (orientation), GPS (global pose).' },
+        { head: 'LiDAR Function', desc: 'Spinning laser at 10Hz, 64 channels. Generates 1.3M points/second. Creates 3D point cloud of road/obstacles.' },
+        { head: 'Radar Function', desc: '77GHz automotive radar. Measures range, velocity, angle of objects. Robust in rain/fog (where camera fails).' },
+        { head: 'Camera Role', desc: 'Detects lanes, traffic lights, signs, pedestrians using deep learning (YOLO, Faster RCNN). High latency (50-100ms).' },
+        { head: 'Sensor Fusion', desc: 'Extended Kalman Filter: fuses LiDAR + Radar for position/velocity of each object. Reduces uncertainty.' },
+        { head: 'Object Tracking', desc: 'Track IDs assigned to detected objects. History of 10 frames predicts future position (Kalman prediction).' },
+        { head: 'Collision Avoidance', desc: 'If object on collision course, compute safe trajectory, activate steering/braking before impact (Predictive MPC).' },
+        { head: 'Real-Time Constraints', desc: 'End-to-end latency must be <200ms. LiDAR+Radar: 100ms. Processing: 50ms. Decision+actuators: 50ms.' },
+        { head: 'Redundancy', desc: 'Dual-channel system: if one LiDAR fails, switch to Radar+Camera only. Different failure modes = safe shutdown.' }
+      ]
+    },
+    {
+      q: 'Design an Industry 4.0 predictive maintenance system using smart sensors and machine learning.',
+      points: [
+        { head: 'Monitored Equipment', desc: '5 CNC machines in a shop. Goal: detect bearing faults 1 week before failure, prevent unplanned downtime.' },
+        { head: 'Sensor Selection', desc: 'Accelerometer (vibration), thermistor (bearing temp), current sensor (motor current), encoder (rotation speed).' },
+        { head: 'Data Collection', desc: 'Sample accelerometer at 10kHz, capture 1-second windows every 30 seconds. Total: 10k samples/30s = high bandwidth.' },
+        { head: 'Feature Extraction', desc: 'Compute RMS, peak, crest factor, entropy. Take FFT, extract dominant frequencies. 20 features per sample.' },
+        { head: 'ML Model', desc: 'Random Forest classifier trained on historical data: healthy vs fault bearing. 95% accuracy on test set.' },
+        { head: 'Anomaly Detection', desc: 'Isolation Forest detects unusual feature combinations not seen in training. Flags new fault modes.' },
+        { head: 'Health Scoring', desc: 'Each machine gets daily health score 0-100. Score<50 → alert maintenance, schedule replacement.' },
+        { head: 'Remaining Useful Life', desc: 'Regression model predicts days until failure. Update daily based on new data. Trend extrapolation.' },
+        { head: 'Business Impact', desc: 'Bearing cost: $500. Unplanned downtime cost: $10k/hour. 6-month data shows 8 prevented failures → $79k savings.' }
+      ]
+    },
+    {
+      q: 'Discuss the future of smart sensors: nano-sensors, flexible sensors, and edge AI integration.',
+      points: [
+        { head: 'Nano-Sensor Definition', desc: 'Sensors at nanometer scale using graphene, carbon nanotubes, semiconductor quantum dots.' },
+        { head: 'Single-Molecule Sensing', desc: 'Can detect individual virus particles, glucose molecules, cancer biomarkers. Sensitivity: picomolar concentrations.' },
+        { head: 'Medical Application', desc: 'Lab-on-a-chip: blood glucose measured without finger prick. Implanted nano-sensor monitors blood continuously.' },
+        { head: 'Flexible Electronics', desc: 'Sensors printed on plastic, fabric using inkjet/screen printing. Conform to skin, textile integration.' },
+        { head: 'E-Skin Devices', desc: 'Arrays of flexible pressure/temperature sensors on polyimide substrate. Worn as second skin, measures body vitals.' },
+        { head: 'Energy Harvesting', desc: 'Piezoelectric (motion) + thermoelectric (body heat) + solar microcells. Battery-free operation, wireless transmission.' },
+        { head: 'Edge AI (TinyML)', desc: 'ML models (10-100KB) run directly on MCU. Accelerometer data → fall detection in milliseconds without cloud.' },
+        { head: 'Trusted Execution', desc: 'Hardware security module (HSM) embedded in sensor. Sensor data signed with private key, verified at receiver.' },
+        { head: 'Vision 2030', desc: 'Ubiquitous sensing: trillions of nano-sensors in environment, clothing, body. Real-time digital replica of physical world.' }
       ]
     }
   ],
