@@ -179,7 +179,7 @@ const UNITS = [
         { head: 'Operating Principle', desc: 'Ultrasonic: sound reflection. Microwave: Doppler shift of RF waves. Optical: light beam interruption or reflection.' },
         { head: 'Frequency Used', desc: 'Ultrasonic: 20kHz–200kHz. Microwave: 5–24GHz. Optical: visible/IR light (300THz+).' },
         { head: 'Range', desc: 'Ultrasonic: up to 4m. Microwave: up to 15m+. Optical (through-beam): up to 30m+.' },
-        { head: 'Penetration', desc: 'Microwave passes through walls/objects. Ultrasonic doesn't. Optical blocked by any opaque surface.' },
+        { head: 'Penetration', desc: 'Microwave passes through walls/objects. Ultrasonic does not. Optical blocked by any opaque surface.' },
         { head: 'Affected By', desc: 'Ultrasonic: temperature, wind. Microwave: metallic reflections. Optical: dust, fog, ambient light.' },
         { head: 'Cost', desc: 'Ultrasonic: cheapest. Optical: moderate. Microwave: most expensive.' },
         { head: 'Best Application', desc: 'Ultrasonic: robots, tanks. Microwave: security. Optical: production line counting, precision detection.' }
